@@ -137,9 +137,9 @@ def wider(m1, m2, new_width, bnorm=None, out_size=None, noise=True,
 
         if noise:
             noise_scale = 5e-2 if noise_var is None else noise_var
-            noise = np.random.normal(scale=noise_scale * nw1.std(),
+            noise = np.random.normal(scale=noise_scale * nw1.std().item(),
                                      size=list(nw1.size()))
-            nw1 += th.FloatTensor(noise).type_as(nw1)
+            nw1 += th.as_tensor(noise, device=nw1.device, dtype=nw1.dtype)
 
         m1.weight.data = nw1
 
@@ -179,11 +179,13 @@ def deeper(m, nonlin, bnorm_flag=False, weight_norm=True, noise=True):
 
     if "Linear" in m.__class__.__name__:
         m2 = th.nn.Linear(m.out_features, m.out_features)
-        m2.weight.data.copy_(th.eye(m.out_features))
+        m2 = m2.to(device=m.weight.device, dtype=m.weight.dtype)
+        m2.weight.data.copy_(th.eye(m.out_features, device=m2.weight.device, dtype=m2.weight.dtype))
         m2.bias.data.zero_()
 
         if bnorm_flag:
             bnorm = th.nn.BatchNorm1d(m2.weight.size(1))
+            bnorm = bnorm.to(device=m.weight.device, dtype=m.weight.dtype)
             bnorm.weight.data.fill_(1)
             bnorm.bias.data.fill_(0)
             bnorm.running_mean.fill_(0)
@@ -197,6 +199,7 @@ def deeper(m, nonlin, bnorm_flag=False, weight_norm=True, noise=True):
             # pad_w = pad_h
             m2 = th.nn.Conv2d(m.out_channels, m.out_channels,
                               kernel_size=m.kernel_size, padding=pad_h)
+            m2 = m2.to(device=m.weight.device, dtype=m.weight.dtype)
             m2.weight.data.zero_()
             c = m.kernel_size[0] // 2
 
@@ -207,6 +210,7 @@ def deeper(m, nonlin, bnorm_flag=False, weight_norm=True, noise=True):
                               m.out_channels,
                               kernel_size=m.kernel_size,
                               padding=(pad_d, pad_hw, pad_hw))
+            m2 = m2.to(device=m.weight.device, dtype=m.weight.dtype)
             m2.weight.data.zero_()
             c_wh = m.kernel_size[1] // 2
             c_d = m.kernel_size[0] // 2
@@ -233,9 +237,9 @@ def deeper(m, nonlin, bnorm_flag=False, weight_norm=True, noise=True):
                 m2.weight.data.narrow(0, i, 1).narrow(1, i, 1).narrow(2, c_d, 1).narrow(3, c_wh, 1).narrow(4, c_wh, 1).fill_(1)
 
         if noise:
-            noise = np.random.normal(scale=5e-2 * m2.weight.data.std(),
+            noise = np.random.normal(scale=5e-2 * m2.weight.data.std().item(),
                                      size=list(m2.weight.size()))
-            m2.weight.data += th.FloatTensor(noise).type_as(m2.weight.data)
+            m2.weight.data += th.as_tensor(noise, device=m2.weight.device, dtype=m2.weight.dtype)
 
         if restore:
             m2.weight.data = m2.weight.data.view(m2.weight.size(0),
@@ -250,6 +254,7 @@ def deeper(m, nonlin, bnorm_flag=False, weight_norm=True, noise=True):
                 bnorm = th.nn.BatchNorm2d(m2.out_channels)
             elif m.weight.dim() == 5:
                 bnorm = th.nn.BatchNorm3d(m2.out_channels)
+            bnorm = bnorm.to(device=m.weight.device, dtype=m.weight.dtype)
             bnorm.weight.data.fill_(1)
             bnorm.bias.data.fill_(0)
             bnorm.running_mean.fill_(0)

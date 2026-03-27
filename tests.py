@@ -3,6 +3,10 @@ import torch as th
 import torch.nn as nn
 import torch.nn.functional as F
 from net2net import wider, deeper
+from device_utils import select_device
+
+
+device = select_device()
 
 
 class Net(nn.Module):
@@ -53,12 +57,12 @@ class TestOperators(unittest.TestCase):
 
 
     def _create_net(self):
-        return Net()
+        return Net().to(device)
 
 
     def test_wider(self):
         net = self._create_net()
-        inp = th.autograd.Variable(th.rand(32, 1, 28, 28))
+        inp = th.rand(32, 1, 28, 28, device=device)
 
         net.eval()
         out = net(inp)
@@ -88,8 +92,8 @@ class TestOperators(unittest.TestCase):
         assert nout.size(0) == 32 and nout.size(1) == 10
 
         # Testing 3D layers
-        net = Net3D()
-        inp = th.autograd.Variable(th.rand(32, 1, 16, 28, 28))
+        net = Net3D().to(device)
+        inp = th.rand(32, 1, 16, 28, 28, device=device)
 
         net.eval()
         out = net(inp)
@@ -121,7 +125,7 @@ class TestOperators(unittest.TestCase):
 
         # testing noise
         net = self._create_net()
-        inp = th.autograd.Variable(th.rand(32, 1, 28, 28))
+        inp = th.rand(32, 1, 28, 28, device=device)
 
         net.eval()
         out = net(inp)
@@ -162,7 +166,7 @@ class TestOperators(unittest.TestCase):
 
     def test_deeper(self):
         net = self._create_net()
-        inp = th.autograd.Variable(th.rand(32, 1, 28, 28))
+        inp = th.rand(32, 1, 28, 28, device=device)
 
         net.eval()
         out = net(inp)
@@ -182,8 +186,8 @@ class TestOperators(unittest.TestCase):
         assert abs((out - nout).sum().item()) < 1e-1
 
         # test for 3D net
-        net = Net3D()
-        inp = th.autograd.Variable(th.rand(32, 1, 16, 28, 28))
+        net = Net3D().to(device)
+        inp = th.rand(32, 1, 16, 28, 28, device=device)
 
         net.eval()
         out = net(inp)
@@ -200,13 +204,13 @@ class TestOperators(unittest.TestCase):
         assert abs((out - nout).sum().item()) < 1e-1, "New layer changes values by {}".format(abs((out - nout).sum().item()))
 
     def test_deeper_identity_center_2d(self):
-        conv = nn.Conv2d(1, 1, kernel_size=3, padding=1, bias=False)
+        conv = nn.Conv2d(1, 1, kernel_size=3, padding=1, bias=False).to(device)
         with th.no_grad():
             conv.weight.zero_()
             conv.weight[0, 0, 1, 1] = 1.0
 
         block = deeper(conv, None, bnorm_flag=False, weight_norm=False, noise=False)
-        inp = th.rand(4, 1, 8, 8)
+        inp = th.rand(4, 1, 8, 8, device=device)
 
         expected = conv(inp)
         actual = block(inp)
@@ -214,13 +218,13 @@ class TestOperators(unittest.TestCase):
         assert th.allclose(expected, actual, atol=1e-6)
 
     def test_deeper_identity_center_3d(self):
-        conv = nn.Conv3d(1, 1, kernel_size=3, padding=1, bias=False)
+        conv = nn.Conv3d(1, 1, kernel_size=3, padding=1, bias=False).to(device)
         with th.no_grad():
             conv.weight.zero_()
             conv.weight[0, 0, 1, 1, 1] = 1.0
 
         block = deeper(conv, None, bnorm_flag=False, weight_norm=False, noise=False)
-        inp = th.rand(2, 1, 6, 6, 6)
+        inp = th.rand(2, 1, 6, 6, 6, device=device)
 
         expected = conv(inp)
         actual = block(inp)

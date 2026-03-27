@@ -3,8 +3,10 @@ name = "net2net"
 version = "0.0.0"
 requires-python = ">=3.10"
 dependencies = [
+  "matplotlib",
   "numpy",
   "torch",
+  "torchvision",
 ]
 
 [tool.uv]

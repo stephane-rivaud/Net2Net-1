@@ -1,14 +1,15 @@
 import argparse
 import time
+from pathlib import Path
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from torchvision import datasets, transforms
-from torch.autograd import Variable
 import sys
-sys.path.append('../')
+sys.path.append(str(Path(__file__).resolve().parents[1]))
 from net2net import wider, deeper
+from device_utils import select_device, seed_everything
 import copy
 import numpy as np
 
@@ -39,11 +40,14 @@ parser.add_argument('--noise', type=int, default=1,
 parser.add_argument('--weight_norm', type=int, default=1,
                     help='norm or no weight norm 0-1')
 args = parser.parse_args()
-args.cuda = not args.no_cuda and torch.cuda.is_available()
+device = select_device(force_cpu=args.no_cuda)
+args.cuda = device.type == "cuda"
 
-torch.manual_seed(args.seed)
-if args.cuda:
-    torch.cuda.manual_seed(args.seed)
+seed_everything(args.seed, device)
+
+BASE_DIR = Path(__file__).resolve().parent
+DATA_DIR = BASE_DIR / "data"
+PLOT_DIR = BASE_DIR / "plots" / "cifar"
 
 train_transform = transforms.Compose(
              [
@@ -55,12 +59,12 @@ test_transform = transforms.Compose(
               transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 
 
-kwargs = {'num_workers': 8, 'pin_memory': True} if args.cuda else {}
+kwargs = {'num_workers': 8, 'pin_memory': True} if device.type == "cuda" else {}
 train_loader = torch.utils.data.DataLoader(
-    datasets.CIFAR10('./data', train=True, download=True, transform=train_transform),
+    datasets.CIFAR10(str(DATA_DIR), train=True, download=True, transform=train_transform),
     batch_size=args.batch_size, shuffle=True, **kwargs)
 test_loader = torch.utils.data.DataLoader(
-    datasets.CIFAR10('./data', train=False, transform=test_transform),
+    datasets.CIFAR10(str(DATA_DIR), train=False, transform=test_transform),
     batch_size=args.test_batch_size, shuffle=True, **kwargs)
 
 
@@ -180,16 +184,14 @@ def train(epoch):
     avg_loss = 0
     avg_accu = 0
     for batch_idx, (data, target) in enumerate(train_loader):
-        if args.cuda:
-            data, target = data.cuda(), target.cuda()
-        data, target = Variable(data), Variable(target)
+        data, target = data.to(device), target.to(device)
         optimizer.zero_grad()
         output = model(data)
         loss = criterion(output, target)
         loss.backward()
         optimizer.step()
-        pred = output.data.max(1, keepdim=True)[1]  # get the index of the max log-probability
-        avg_accu += pred.eq(target.data.view_as(pred)).cpu().sum().item()
+        pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
+        avg_accu += pred.eq(target.view_as(pred)).cpu().sum().item()
         avg_loss += loss.item()
         if batch_idx % args.log_interval == 0:
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
@@ -205,13 +207,11 @@ def test():
     test_loss = 0
     correct = 0
     for data, target in test_loader:
-        if args.cuda:
-            data, target = data.cuda(), target.cuda()
-        data, target = Variable(data), Variable(target)
+        data, target = data.to(device), target.to(device)
         output = model(data)
         test_loss += F.nll_loss(output, target, reduction='sum').item()  # sum up batch loss
-        pred = output.data.max(1, keepdim=True)[1]  # get the index of the max log-probability
-        correct += pred.eq(target.data.view_as(pred)).cpu().sum().item()
+        pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
+        correct += pred.eq(target.view_as(pred)).cpu().sum().item()
 
     test_loss /= len(test_loader.dataset)
     print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
@@ -222,10 +222,11 @@ def test():
 
 def run_training(model, run_name, epochs, plot=None):
     global optimizer
-    model.cuda()
+    model = model.to(device)
     optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum)
     if plot is None:
-        plot = PlotLearning('./plots/cifar/', 10, prefix=run_name)
+        PLOT_DIR.mkdir(parents=True, exist_ok=True)
+        plot = PlotLearning(str(PLOT_DIR), 10, prefix=run_name)
     for epoch in range(1, epochs + 1):
         accu_train, loss_train = train(epoch)
         accu_test, loss_test = test()
@@ -242,7 +243,7 @@ if __name__ == "__main__":
     start_t = time.time()
     print("\n\n > Teacher training ... ")
     model = Net()
-    model.cuda()
+    model = model.to(device)
     criterion = nn.NLLLoss()
     plot = run_training(model, 'Teacher_', (args.epochs + 1) // 3)
 
@@ -276,7 +277,6 @@ if __name__ == "__main__":
     del model
     model = model_
     model.define_wider()
-    model.cuda()
     run_training(model, 'Wider_teacher_', args.epochs + 1)
     print(" >> Time taken  {}".format(time.time() - start_t))
 
