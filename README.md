@@ -4,12 +4,12 @@ Checkout the [paper](https://arxiv.org/abs/1511.05641:) for more detail
 
 ## Quickstart
 
-Create the local environment and run the test file with `uv`:
+Create a clean project environment with `uv` and run the test suite:
 
 ```bash
 uv venv
 uv sync
-uv run python tests.py
+uv run pytest -q tests.py
 ```
 
 Or use `just`:
@@ -19,6 +19,8 @@ just venv
 just sync
 just test
 ```
+
+If you need to reset the environment, remove `.venv` and rerun `uv venv` and `uv sync`.
 
 ## Observations:
 

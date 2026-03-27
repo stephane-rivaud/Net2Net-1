@@ -7,4 +7,4 @@ sync:
     uv sync
 
 test:
-    uv run python tests.py
+    uv run pytest -q tests.py
