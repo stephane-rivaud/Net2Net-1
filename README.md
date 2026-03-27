@@ -2,6 +2,24 @@
 Net2Net implementation on PyTorch for any possible vision layers (nn.Linear, nn.Conv2d, nn.Conv3D, even wider operator btw nn.ConvX to nn.Linear).
 Checkout the [paper](https://arxiv.org/abs/1511.05641:) for more detail
 
+## Quickstart
+
+Create the local environment and run the test file with `uv`:
+
+```bash
+uv venv
+uv sync
+uv run python tests.py
+```
+
+Or use `just`:
+
+```bash
+just venv
+just sync
+just test
+```
+
 ## Observations:
 
 - Using BatchNorm between layers, improves the competence of Net2Net. Otherwise, Net2Net approach is not able to get

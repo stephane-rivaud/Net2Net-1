@@ -1,0 +1,11 @@
+[project]
+name = "net2net"
+version = "0.0.0"
+requires-python = ">=3.10"
+dependencies = [
+  "numpy",
+  "torch",
+]
+
+[tool.uv]
+package = false
