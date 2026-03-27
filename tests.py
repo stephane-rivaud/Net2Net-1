@@ -23,7 +23,7 @@ class Net(nn.Module):
         x = F.relu(self.fc1(x))
         x = F.dropout(x, training=self.training)
         x = self.fc2(x)
-        return F.log_softmax(x)
+        return F.log_softmax(x, dim=1)
 
 
 
@@ -45,7 +45,7 @@ class Net3D(nn.Module):
         x = F.relu(self.fc1(x))
         # x = F.dropout(x, training=self.training)
         x = self.fc2(x)
-        return F.log_softmax(x)
+        return F.log_softmax(x, dim=1)
 
 
 
@@ -84,7 +84,7 @@ class TestOperators(unittest.TestCase):
 
         net.eval()
         nout = net(inp)
-        assert th.abs((out - nout).sum().data)[0] < 1e-1
+        assert abs((out - nout).sum().item()) < 1e-1
         assert nout.size(0) == 32 and nout.size(1) == 10
 
         # Testing 3D layers
@@ -116,7 +116,7 @@ class TestOperators(unittest.TestCase):
 
         net.eval()
         nout = net(inp)
-        assert th.abs((out - nout).sum().data)[0] < 1e-1
+        assert abs((out - nout).sum().item()) < 1e-1
         assert nout.size(0) == 32 and nout.size(1) == 10
 
         # testing noise
@@ -143,8 +143,21 @@ class TestOperators(unittest.TestCase):
 
         net.eval()
         nout = net(inp)
-        assert th.abs((out - nout).sum().data)[0] > 1e-1
+        assert abs((out - nout).sum().item()) > 1e-1
         assert nout.size(0) == 32 and nout.size(1) == 10
+
+    def test_wider_noise_var_alias(self):
+        net = self._create_net()
+
+        conv1, conv2, _ = wider(net._modules['conv1'],
+                                net._modules['conv2'],
+                                20,
+                                noise_var=0.01,
+                                random_init=False,
+                                weight_norm=False)
+
+        assert conv1.out_channels == 20
+        assert conv2.in_channels == 20
 
 
     def test_deeper(self):
@@ -166,7 +179,7 @@ class TestOperators(unittest.TestCase):
         net.eval()
         nout = net(inp)
 
-        assert th.abs((out - nout).sum().data)[0] < 1e-1
+        assert abs((out - nout).sum().item()) < 1e-1
 
         # test for 3D net
         net = Net3D()
@@ -184,4 +197,36 @@ class TestOperators(unittest.TestCase):
         net.eval()
         nout = net(inp)
 
-        assert th.abs((out - nout).sum().data)[0] < 1e-1, "New layer changes values by {}".format(th.abs(out - nout).sum().data[0])
+        assert abs((out - nout).sum().item()) < 1e-1, "New layer changes values by {}".format(abs((out - nout).sum().item()))
+
+    def test_deeper_identity_center_2d(self):
+        conv = nn.Conv2d(1, 1, kernel_size=3, padding=1, bias=False)
+        with th.no_grad():
+            conv.weight.zero_()
+            conv.weight[0, 0, 1, 1] = 1.0
+
+        block = deeper(conv, None, bnorm_flag=False, weight_norm=False, noise=False)
+        inp = th.rand(4, 1, 8, 8)
+
+        expected = conv(inp)
+        actual = block(inp)
+
+        assert th.allclose(expected, actual, atol=1e-6)
+
+    def test_deeper_identity_center_3d(self):
+        conv = nn.Conv3d(1, 1, kernel_size=3, padding=1, bias=False)
+        with th.no_grad():
+            conv.weight.zero_()
+            conv.weight[0, 0, 1, 1, 1] = 1.0
+
+        block = deeper(conv, None, bnorm_flag=False, weight_norm=False, noise=False)
+        inp = th.rand(2, 1, 6, 6, 6)
+
+        expected = conv(inp)
+        actual = block(inp)
+
+        assert th.allclose(expected, actual, atol=1e-6)
+
+
+if __name__ == "__main__":
+    unittest.main(verbosity=2)

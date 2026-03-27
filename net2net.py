@@ -4,7 +4,7 @@ from collections import Counter
 
 
 def wider(m1, m2, new_width, bnorm=None, out_size=None, noise=True,
-          random_init=True, weight_norm=True):
+          random_init=True, weight_norm=True, noise_var=None):
     """
     Convert m1 layer to its wider version by adapthing next weight layer and
     possible batch norm layer in btw.
@@ -21,6 +21,7 @@ def wider(m1, m2, new_width, bnorm=None, out_size=None, noise=True,
             randomly.
         weight_norm (optional, True) - If True, weights are normalized before
             transfering.
+        noise_var (float, optional) - legacy alias used by the example scripts.
     """
 
     w1 = m1.weight.data
@@ -135,7 +136,8 @@ def wider(m1, m2, new_width, bnorm=None, out_size=None, noise=True,
         m2.in_channels = new_width
 
         if noise:
-            noise = np.random.normal(scale=5e-2 * nw1.std(),
+            noise_scale = 5e-2 if noise_var is None else noise_var
+            noise = np.random.normal(scale=noise_scale * nw1.std(),
                                      size=list(nw1.size()))
             nw1 += th.FloatTensor(noise).type_as(nw1)
 
@@ -196,7 +198,7 @@ def deeper(m, nonlin, bnorm_flag=False, weight_norm=True, noise=True):
             m2 = th.nn.Conv2d(m.out_channels, m.out_channels,
                               kernel_size=m.kernel_size, padding=pad_h)
             m2.weight.data.zero_()
-            c = m.kernel_size[0] // 2 + 1
+            c = m.kernel_size[0] // 2
 
         elif m.weight.dim() == 5:
             pad_hw = int((m.kernel_size[1] - 1) / 2)  # pad height and width
@@ -205,8 +207,9 @@ def deeper(m, nonlin, bnorm_flag=False, weight_norm=True, noise=True):
                               m.out_channels,
                               kernel_size=m.kernel_size,
                               padding=(pad_d, pad_hw, pad_hw))
-            c_wh = m.kernel_size[1] // 2 + 1
-            c_d = m.kernel_size[0] // 2 + 1
+            m2.weight.data.zero_()
+            c_wh = m.kernel_size[1] // 2
+            c_d = m.kernel_size[0] // 2
 
         restore = False
         if m2.weight.dim() == 2:
