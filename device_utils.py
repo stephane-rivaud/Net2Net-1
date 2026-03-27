@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import numpy as np
 import torch
 
 
@@ -29,8 +30,9 @@ def select_device(force_cpu: bool = False) -> torch.device:
 
 
 def seed_everything(seed: int, device: torch.device) -> None:
-    """Seed PyTorch and any accelerator-specific RNGs."""
+    """Seed PyTorch, NumPy, and any accelerator-specific RNGs."""
 
     torch.manual_seed(seed)
+    np.random.seed(seed)
     if device.type == "cuda":
         torch.cuda.manual_seed_all(seed)

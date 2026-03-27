@@ -1,4 +1,5 @@
 import unittest
+import numpy as np
 import torch as th
 import torch.nn as nn
 import torch.nn.functional as F
@@ -162,6 +163,23 @@ class TestOperators(unittest.TestCase):
 
         assert conv1.out_channels == 20
         assert conv2.in_channels == 20
+
+
+    def test_seed_everything_seeds_numpy(self):
+        from device_utils import seed_everything
+
+        cpu = th.device("cpu")
+
+        seed_everything(123, cpu)
+        torch_first = th.rand(4)
+        numpy_first = np.random.rand(4)
+
+        seed_everything(123, cpu)
+        torch_second = th.rand(4)
+        numpy_second = np.random.rand(4)
+
+        assert th.allclose(torch_first, torch_second)
+        assert np.allclose(numpy_first, numpy_second)
 
 
     def test_deeper(self):
