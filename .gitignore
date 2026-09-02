@@ -90,6 +90,10 @@ ENV/
 env.bak/
 venv.bak/
 
+# W&B local run dirs and downloaded datasets
+wandb/
+examples/data/
+
 # Spyder project settings
 .spyderproject
 .spyproject

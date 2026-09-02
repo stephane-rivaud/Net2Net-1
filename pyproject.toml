@@ -8,6 +8,7 @@ dependencies = [
   "pytest",
   "torch",
   "torchvision",
+  "wandb>=0.29.0",
 ]
 
 [tool.uv]

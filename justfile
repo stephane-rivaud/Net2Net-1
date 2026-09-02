@@ -7,4 +7,4 @@ sync:
     uv sync
 
 test:
-    uv run pytest -q tests.py
+    uv run pytest -q tests.py tests_repro_figures.py

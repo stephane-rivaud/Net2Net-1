@@ -1,0 +1,82 @@
+{
+  "git_sha": "5a0cb078e53f2e24fc7ef576e1ef09813e388c93",
+  "device": "mps",
+  "runs": {
+    "cifar10": {
+      "dataset": "cifar10",
+      "function_delta": {
+        "wider": {
+          "max_abs": 0.15774595737457275,
+          "mean_abs": 0.05872508883476257,
+          "l2": 0.9592294096946716
+        },
+        "deeper": {
+          "max_abs": 3.814697265625e-06,
+          "mean_abs": 1.7628074147069128e-06,
+          "l2": 2.678046621440444e-05
+        }
+      },
+      "teacher_final_test_acc": 0.6093,
+      "net2wider_final_test_acc": 0.6381,
+      "net2deeper_final_test_acc": 0.7193,
+      "scratch_wider_final_test_acc": 0.6913,
+      "curves": {
+        "net2wider": [
+          0.4499,
+          0.5469,
+          0.5833,
+          0.6093,
+          0.6319,
+          0.6198,
+          0.6175,
+          0.6381
+        ],
+        "net2deeper": [
+          0.4499,
+          0.5469,
+          0.5833,
+          0.6093,
+          0.6661,
+          0.6932,
+          0.7018,
+          0.7193
+        ],
+        "scratch_wider": [
+          0.5234,
+          0.6211,
+          0.5861,
+          0.6227,
+          0.6315,
+          0.6647,
+          0.6507,
+          0.6913
+        ]
+      }
+    },
+    "mnist": {
+      "dataset": "mnist",
+      "function_delta": {
+        "wider": {
+          "max_abs": 2.384185791015625e-07,
+          "mean_abs": null,
+          "l2": null
+        },
+        "deeper": {
+          "max_abs": 0.0,
+          "mean_abs": null,
+          "l2": null
+        }
+      },
+      "teacher_final_test_acc": 0.9821,
+      "net2wider_final_test_acc": 0.9881,
+      "net2deeper_final_test_acc": 0.9889,
+      "scratch_wider_final_test_acc": 0.9891
+    }
+  },
+  "wandb": {
+    "project": "net2net",
+    "group": "repro-figures-2026-09",
+    "mnist_run": "https://wandb.ai/TAU-Frugal/net2net/runs/3a1lr3cr",
+    "cifar10_run": "https://wandb.ai/TAU-Frugal/net2net/runs/94xzugxj"
+  }
+}
