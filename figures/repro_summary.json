@@ -1,82 +1,108 @@
 {
-  "git_sha": "5a0cb078e53f2e24fc7ef576e1ef09813e388c93",
+  "git_sha": "480bce43ff6dfdccd7e1fd18e9355fdfd3eaf041",
   "device": "mps",
   "runs": {
-    "cifar10": {
-      "dataset": "cifar10",
-      "function_delta": {
-        "wider": {
-          "max_abs": 0.15774595737457275,
-          "mean_abs": 0.05872508883476257,
-          "l2": 0.9592294096946716
-        },
-        "deeper": {
-          "max_abs": 3.814697265625e-06,
-          "mean_abs": 1.7628074147069128e-06,
-          "l2": 2.678046621440444e-05
-        }
-      },
-      "teacher_final_test_acc": 0.6093,
-      "net2wider_final_test_acc": 0.6381,
-      "net2deeper_final_test_acc": 0.7193,
-      "scratch_wider_final_test_acc": 0.6913,
-      "curves": {
-        "net2wider": [
-          0.4499,
-          0.5469,
-          0.5833,
-          0.6093,
-          0.6319,
-          0.6198,
-          0.6175,
-          0.6381
-        ],
-        "net2deeper": [
-          0.4499,
-          0.5469,
-          0.5833,
-          0.6093,
-          0.6661,
-          0.6932,
-          0.7018,
-          0.7193
-        ],
-        "scratch_wider": [
-          0.5234,
-          0.6211,
-          0.5861,
-          0.6227,
-          0.6315,
-          0.6647,
-          0.6507,
-          0.6913
-        ]
-      }
-    },
     "mnist": {
       "dataset": "mnist",
       "function_delta": {
         "wider": {
           "max_abs": 2.384185791015625e-07,
-          "mean_abs": null,
-          "l2": null
+          "mean_abs": 2.3841858265427618e-08,
+          "l2": 9.5367431640625e-07
         },
         "deeper": {
           "max_abs": 0.0,
-          "mean_abs": null,
-          "l2": null
+          "mean_abs": 0.0,
+          "l2": 0.0
         }
       },
       "teacher_final_test_acc": 0.9821,
       "net2wider_final_test_acc": 0.9881,
       "net2deeper_final_test_acc": 0.9889,
-      "scratch_wider_final_test_acc": 0.9891
+      "scratch_wider_final_test_acc": 0.9891,
+      "curves": {
+        "net2wider": [
+          0.9677,
+          0.9787,
+          0.9826,
+          0.9821,
+          0.9842,
+          0.9854,
+          0.9877,
+          0.9881
+        ],
+        "net2deeper": [
+          0.9677,
+          0.9787,
+          0.9826,
+          0.9821,
+          0.982,
+          0.9858,
+          0.9881,
+          0.9889
+        ],
+        "scratch_wider": [
+          0.9755,
+          0.9824,
+          0.9861,
+          0.9843,
+          0.9877,
+          0.9876,
+          0.9891,
+          0.9891
+        ]
+      }
+    },
+    "cifar10": {
+      "dataset": "cifar10",
+      "function_delta": {
+        "wider": {
+          "max_abs": 4.76837158203125e-07,
+          "mean_abs": 3.4272670035306874e-08,
+          "l2": 1.1920928955078125e-06
+        },
+        "deeper": {
+          "max_abs": 2.6226043701171875e-06,
+          "mean_abs": 7.82310962677002e-07,
+          "l2": 1.3421505173027981e-05
+        }
+      },
+      "teacher_final_test_acc": 0.6043,
+      "net2wider_final_test_acc": 0.6436,
+      "net2deeper_final_test_acc": 0.7161,
+      "scratch_wider_final_test_acc": 0.716,
+      "curves": {
+        "net2wider": [
+          0.5177,
+          0.5209,
+          0.588,
+          0.6043,
+          0.5808,
+          0.6282,
+          0.6664,
+          0.6436
+        ],
+        "net2deeper": [
+          0.5177,
+          0.5209,
+          0.588,
+          0.6043,
+          0.6532,
+          0.6925,
+          0.7091,
+          0.7161
+        ],
+        "scratch_wider": [
+          0.5758,
+          0.5561,
+          0.6569,
+          0.6422,
+          0.6769,
+          0.6924,
+          0.7033,
+          0.716
+        ]
+      }
     }
-  },
-  "wandb": {
-    "project": "net2net",
-    "group": "repro-figures-2026-09",
-    "mnist_run": "https://wandb.ai/TAU-Frugal/net2net/runs/3a1lr3cr",
-    "cifar10_run": "https://wandb.ai/TAU-Frugal/net2net/runs/94xzugxj"
   }
 }

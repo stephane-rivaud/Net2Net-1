@@ -116,12 +116,14 @@ def wider(m1, m2, new_width, bnorm=None, out_size=None, noise=True,
                 nw2.select(0, i).copy_(w2.select(0, idx).clone())
             nb1[i] = b1[idx]
 
+            if bnorm is not None:
+                nrunning_mean[i] = bnorm.running_mean[idx]
+                nrunning_var[i] = bnorm.running_var[idx]
+                if bnorm.affine:
+                    nweight[i] = bnorm.weight.data[idx]
+                    nbias[i] = bnorm.bias.data[idx]
+
         if bnorm is not None:
-            nrunning_mean[i] = bnorm.running_mean[idx]
-            nrunning_var[i] = bnorm.running_var[idx]
-            if bnorm.affine:
-                nweight[i] = bnorm.weight.data[idx]
-                nbias[i] = bnorm.bias.data[idx]
             bnorm.num_features = new_width
 
         if not random_init:
